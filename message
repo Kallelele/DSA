@@ -1,0 +1,62 @@
+@using KauSocialNetwork.Models
+
+
+@{
+    var users = (IQueryable<User>)ViewData["users"];
+    var msgs = (IQueryable<Message>)ViewData["msg"];
+    var loggedinuser = (User)Session["user"];
+    ViewBag.Title = "Create a message";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (TempData["messageSent"] != null)
+{
+    <p class="alert alert-success" id="successMessage">@TempData["messageSent"]</p>
+}
+@{var hasconversation = new List<User>();}
+
+<h2>Messages:</h2>
+<ul class="list-group">
+    
+       @foreach (var u in msgs)
+       {
+           if (u.ReceiverID == loggedinuser.UserID || u.SenderID == loggedinuser.UserID)
+           {
+              var conversationName = new User();
+               foreach (var j in users)
+               {
+                   if (u.ReceiverID == j.UserID && u.SenderID == loggedinuser.UserID)
+                   {
+                       conversationName = j;
+                       hasconversation.Add(conversationName);
+                   }
+                   else if (u.SenderID == j.UserID && u.ReceiverID == loggedinuser.UserID)
+                   {
+                       conversationName = j;
+                       hasconversation.Add(conversationName);
+                   }//find user that has a conversation with me
+               }
+
+               @Html.ActionLink(conversationName.FullName(), "Displaymsg", new { controller = "Message"})
+           }
+       }
+
+
+</ul>
+
+
+<h2>Create a message</h2>
+
+
+
+
+<ul class="list-group">
+        @foreach (var u in users)
+    {
+        if (hasconversation.Find(x => x.UserID == u.UserID)!=u) { 
+            <li class="list-group-item">@Html.ActionLink(u.FullName(), "Show", new {controller="User", id = u.UserID }) ,
+            @Html.ActionLink("Create message","_SendMessageModal", u, new {controller = "Message"})
+        </li>
+        }
+    }
+</ul>
