@@ -1,0 +1,105 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+
+namespace KauSocialNetwork.Models
+{
+    public class Message
+    {
+        public int MessageID { get; set; }
+        public int SenderID { get; set; }
+        public int ReceiverID { get; set; }
+        public string message { get; set; }
+        public DateTime SendDate { get; set; }
+
+    }
+}
+
+
+CONRTOLLER:
+using System;
+using KauSocialNetwork.Models;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+
+namespace KauSocialNetwork.Controllers
+{
+    public class MessageController : Controller
+    {
+        [Models.RequireLogin]
+        public ActionResult DisplayUsers()
+        {
+            DAL.DatabaseMode newDbModel = new DAL.DatabaseMode();
+            DAL.DatabaseContext db = newDbModel.getDatabase();
+
+            var getAllUsersFromDB = from u in db.Users select u;
+            ViewData["users"] = getAllUsersFromDB;
+
+            DAL.DatabaseContext dbm = new DAL.DatabaseContext();
+            var getAllMessagesFromDB = from u in db.Messages select u;
+            ViewData["msg"] = getAllMessagesFromDB;
+            
+            return View("Sendmessage");
+        }
+
+        [Models.RequireLogin]
+        public ActionResult _SendMessageModal(User u)
+        {
+            ViewBag.receiverID = u.UserID;
+            return View();
+          
+        }
+        
+        [Models.RequireLogin]
+        public ActionResult SendMessage(int? receiverID, string msg)
+        {
+            DAL.DatabaseMode newDbModel = new DAL.DatabaseMode();
+            DAL.DatabaseContext db = newDbModel.getDatabase();
+
+            User loggedInUser = (User)Session["user"];
+            int a = (int)receiverID.Value;
+            //User receiverUser = Models.User.Find(a, db);
+            var q = from u in db.Users where u.UserID == a select u;
+            var recuser = (Models.User)q.First();
+            Message _Message = MakeMessage(recuser.UserID, msg, loggedInUser);
+            recuser.Messages.Add(_Message);
+            db.Messages.Add(_Message);
+            db.SaveChanges();
+            TempData["messageSent"] = "Your message has been sent!";
+            return RedirectToAction("DisplayUsers");
+  
+        
+        
+        }
+
+        [Models.RequireLogin]
+        public ActionResult Displaymsg()
+        {
+            DAL.DatabaseContext db = new DAL.DatabaseContext();
+            var getAllUsersFromDB = from u in db.Users select u;
+            ViewData["users"] = getAllUsersFromDB;
+
+            DAL.DatabaseContext dbm = new DAL.DatabaseContext();
+            var getAllMessagesFromDB = from u in db.Messages select u;
+            ViewData["msg"] = getAllMessagesFromDB;
+            
+            return View();
+        }
+
+        private static Message MakeMessage(int receiverID, string msg, User loggedInUser)
+        {
+            Message SendingMessage = new Message()
+            {
+                SenderID = loggedInUser.UserID,
+                ReceiverID = receiverID,
+                message = msg,
+                SendDate = DateTime.Now,
+            };
+            return SendingMessage;
+        }
+         
+    }
+}
