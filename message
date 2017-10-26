@@ -61,7 +61,7 @@
     }
 </ul>
 
-
+SENDMESSAGEMODAL:
 @model KauSocialNetwork.Models.User
 @using KauSocialNetwork.Models
 @using System.Linq
