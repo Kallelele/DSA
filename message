@@ -60,3 +60,25 @@
         }
     }
 </ul>
+
+
+@model KauSocialNetwork.Models.User
+@using KauSocialNetwork.Models
+@using System.Linq
+@{
+    var loggedinuser = (User)Session["user"];
+    int id = (int)ViewBag.receiverID; 
+}
+
+<h1> @id</h1>
+
+
+
+          <div class="modal-body">
+              <form action ="@Url.Action("SendMessage", new { controller = "Message" })" method="post" >
+                        <textarea name="msg" rows="4" cols="500" maxlength="125" placeholder=@KauSocialNetwork.Resources.Translate.SendAGreeting style="resize: none"></textarea>
+                        <input type="hidden" name="receiverID" value="@id" />
+                        <button type="submit">send message</button>
+                </form>
+</div>
+               
